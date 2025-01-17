@@ -1,8 +1,6 @@
 # 🌍 Smart Waste Management System
 
-Welcome to the **Smart Waste Management System**! This project is a powerful, full-stack web application designed to enhance waste collection, allocation, and tracking using a modern tech stack.
 
----
 
 <div align="center">
   <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node-dot-js&logoColor=white" alt="Node.js Badge" />
@@ -11,23 +9,8 @@ Welcome to the **Smart Waste Management System**! This project is a powerful, fu
   <img src="https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB Badge" />
 </div>
 
----
 
-## 📋 Table of Contents
-
-- [📝 Project Overview](#-project-overview)
-- [🚀 Features](#-features)
-- [🛠️ Tech Stack](#️-tech-stack)
-- [🏁 Getting Started](#-getting-started)
-- [📌 Usage](#-usage)
-- [🖼️ Screenshots](#️-screenshots)
-- [🤝 Contributing](#-contributing)
-- [👥 Contributors](#-contributors)
-- [📜 License](#-license)
-
----
-
-## 📝 Project Overview
+##  Project Overview
 
 The **Smart Waste Management System** offers a comprehensive approach to handling waste management tasks such as:
 
@@ -38,9 +21,9 @@ The **Smart Waste Management System** offers a comprehensive approach to handlin
 
 By supporting multiple roles, this system improves both user experience and operational efficiency.
 
----
 
-## 🚀 Features
+
+##  Features
 
 ### User Management
 - User registration, login, and profile management
@@ -61,10 +44,10 @@ By supporting multiple roles, this system improves both user experience and oper
 - Data validation ensures accurate submissions
 - Error handling to enhance user interactions
 
----
 
 
-## 🏁 Getting Started
+
+##  Getting Started
 
 To set up the Smart Waste Management System on your local machine, follow these steps:
 
@@ -92,19 +75,17 @@ To set up the Smart Waste Management System on your local machine, follow these 
 5. **Access the Application**:
    - Open your browser and go to `http://localhost:3000` to use the application.
 
----
 
-## 📌 Usage
+
+##  Usage
 
 Upon successful installation, here’s how the application works for different users:
 
 - **General User**: Register, log in, and submit waste collection requests.
 - **Admin**: Log in to access dashboards, manage requests, and view analytics.
-- **Collector**: View assigned tasks and report completed tasks.
+- **Collector**: View assigned tasks and report completed task
 
----
-
-## 🖼️ Screenshots
+## ️ Screenshots
 
 ### Home Page
 ![Screenshot_15-11-2024_63611_localhost](https://github.com/user-attachments/assets/0f220bdc-341d-4e26-8a36-32542d3da3e1)
@@ -127,9 +108,9 @@ Upon successful installation, here’s how the application works for different u
 ![Screenshot_15-11-2024_64923_localhost](https://github.com/user-attachments/assets/3f5dd790-3de3-4d80-beef-0c7b4bdaec1c)
 
 
----
 
-## 🤝 Contributing
+
+##  Contributing
 
 We welcome contributions to improve the Smart Waste Management System. Please fork the repository and submit a pull request for any enhancements or bug fixes.
 
@@ -138,9 +119,9 @@ We welcome contributions to improve the Smart Waste Management System. Please fo
 - Provide clear commit messages.
 - Test your changes before submitting.
 
----
 
-## 👥 Contributors
+
+##  Contributors
 
 We’d like to thank all contributors to this project:
 
@@ -148,6 +129,5 @@ We’d like to thank all contributors to this project:
 - **Dilruksha A.G.C.D.** - [GitHub Profile](https://github.com/dilrukshax)
 - **Hesara P.K.A.N.** - [GitHub Profile](https://github.com/nidulaX)
 
----
 
-Thank you for visiting the **Smart Waste Management System** repository! Happy coding! 😃
+
