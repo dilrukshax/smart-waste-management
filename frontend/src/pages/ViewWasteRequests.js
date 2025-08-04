@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import AuthContext from '../context/AuthContext';
 import axios from 'axios';
+import { Eye, Calendar, User, DollarSign, Package, Clock, CheckCircle, AlertCircle, XCircle, Loader, X } from 'lucide-react';
 import '../styles/ViewWasteRequests.css'; // Create this CSS file for custom styles
 
 const ViewWasteRequests = () => {
@@ -45,103 +46,203 @@ const ViewWasteRequests = () => {
 
   return (
     <div className="view-requests-container">
-      <h2>My Waste Collection Requests</h2>
-      {loading ? (
-        <div className="loading-container">Loading...</div>
-      ) : error ? (
-        <div className="error-message">{error}</div>
-      ) : requests.length === 0 ? (
-        <p>You have not made any waste collection requests yet.</p>
-      ) : (
-        <table className="custom-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Date Requested</th>
-              <th>Status</th>
-              <th>Assigned Garbage Collector</th> {/* Changed from "Scheduled Date" */}
-              <th>Total Price (LKR)</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {requests.map((request, index) => (
-              <tr key={request._id}>
-                <td>{index + 1}</td>
-                <td>{new Date(request.createdAt).toLocaleDateString()}</td>
-                <td>{capitalizeFirstLetter(request.status)}</td>
-                <td>
-                  {request.assignedCollector
-                    ? request.assignedCollector.name
-                    : 'Not Assigned'} {/* Display assigned collector name */}
-                </td>
-                <td>{request.totalPrice.toLocaleString()}</td>
-                <td>
-                  <button
-                    className="view-details-button"
-                    onClick={() => handleViewDetails(request)}
-                  >
-                    View Details
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      <div className="container-inner">
+        {/* Header Section */}
+        <div className="page-header">
+          <div className="header-content">
+            <div className="header-icon">
+              <Package size={32} />
+            </div>
+            <div className="header-text">
+              <h1 className="page-title">My Waste Collection Requests</h1>
+              <p className="page-subtitle">Track your waste collection requests and their status</p>
+            </div>
+          </div>
+          <div className="stats-summary">
+            <div className="stat-item">
+              <div className="stat-number">{requests.length}</div>
+              <div className="stat-label">Total Requests</div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-number">
+                {requests.filter(r => r.status === 'completed').length}
+              </div>
+              <div className="stat-label">Completed</div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-number">
+                {requests.filter(r => r.status === 'pending').length}
+              </div>
+              <div className="stat-label">Pending</div>
+            </div>
+          </div>
+        </div>
 
-      {/* Modal to show request details */}
-      {showModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        {/* Content Section */}
+        <div className="content-section">
+          {loading ? (
+            <div className="loading-container">
+              <Loader className="loading-spinner" size={32} />
+              <span>Loading your requests...</span>
+            </div>
+          ) : error ? (
+            <div className="error-container">
+              <AlertCircle size={24} />
+              <span>{error}</span>
+            </div>
+          ) : requests.length === 0 ? (
+            <div className="empty-state">
+              <Package size={64} className="empty-icon" />
+              <h3>No Requests Found</h3>
+              <p>You haven't made any waste collection requests yet.</p>
+              <button className="create-request-btn">
+                Create Your First Request
+              </button>
+            </div>
+          ) : (
+            <div className="requests-grid">
+              {requests.map((request, index) => (
+                <div key={request._id} className="request-card">
+                  <div className="card-header">
+                    <div className="request-number">#{index + 1}</div>
+                    <div className={`status-badge status-${request.status}`}>
+                      {getStatusIcon(request.status)}
+                      <span>{capitalizeFirstLetter(request.status)}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="card-content">
+                    <div className="request-info">
+                      <div className="info-row">
+                        <Calendar size={16} />
+                        <span className="info-label">Date Requested:</span>
+                        <span className="info-value">
+                          {new Date(request.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      
+                      <div className="info-row">
+                        <User size={16} />
+                        <span className="info-label">Collector:</span>
+                        <span className="info-value">
+                          {request.assignedCollector ? request.assignedCollector.name : 'Not Assigned'}
+                        </span>
+                      </div>
+                      
+                      <div className="info-row">
+                        <DollarSign size={16} />
+                        <span className="info-label">Total Price:</span>
+                        <span className="info-value price">
+                          LKR {request.totalPrice.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="waste-items-preview">
+                      <h4>Waste Items:</h4>
+                      <div className="items-list">
+                        {request.wasteItems.map((item, idx) => (
+                          <div key={idx} className="item-preview">
+                            <span className="item-type">
+                              {getWasteIcon(item.wasteType)} {capitalizeFirstLetter(item.wasteType)}
+                            </span>
+                            <span className="item-weight">{item.weight}kg</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="card-footer">
+                    <button
+                      className="view-details-btn"
+                      onClick={() => handleViewDetails(request)}
+                    >
+                      <Eye size={16} />
+                      View Details
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Enhanced Modal */}
+      {showModal && selectedRequest && (
+        <div className="modal-overlay" onClick={handleCloseModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h4>Waste Collection Request Details</h4>
-              <button className="close-modal-button" onClick={handleCloseModal}>
-                &times;
+              <div className="modal-title">
+                <Package size={24} />
+                <h3>Request Details</h3>
+              </div>
+              <button className="close-btn" onClick={handleCloseModal}>
+                <X size={20} />
               </button>
             </div>
+            
             <div className="modal-body">
-              {selectedRequest && (
-                <>
-                  <p><strong>Request ID:</strong> {selectedRequest._id}</p>
-                  <p><strong>Status:</strong> {capitalizeFirstLetter(selectedRequest.status)}</p>
-                  <p><strong>Date Requested:</strong> {new Date(selectedRequest.createdAt).toLocaleDateString()}</p>
-                  <p><strong>Total Price:</strong> {selectedRequest.totalPrice.toLocaleString()} LKR</p>
-                  <p><strong>Payment Status:</strong> {selectedRequest.paymentStatus}</p>
-                  <hr />
-                  <h5>Waste Items:</h5>
-                  <table className="custom-table small">
-                    <thead>
-                      <tr>
-                        <th>Waste Type</th>
-                        <th>Weight (kg)</th>
-                        <th>Price (LKR)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {selectedRequest.wasteItems.map((item, idx) => (
-                        <tr key={idx}>
-                          <td>{capitalizeFirstLetter(item.wasteType)}</td>
-                          <td>{item.weight}</td>
-                          <td>{(item.weight * item.pricePerKg).toLocaleString()}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              <div className="request-details">
+                <div className="details-grid">
+                  <div className="detail-item">
+                    <label>Request ID:</label>
+                    <span className="request-id">#{selectedRequest._id.slice(-8)}</span>
+                  </div>
+                  
+                  <div className="detail-item">
+                    <label>Status:</label>
+                    <div className={`status-badge status-${selectedRequest.status}`}>
+                      {getStatusIcon(selectedRequest.status)}
+                      <span>{capitalizeFirstLetter(selectedRequest.status)}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="detail-item">
+                    <label>Date Requested:</label>
+                    <span>{new Date(selectedRequest.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  
+                  <div className="detail-item">
+                    <label>Payment Status:</label>
+                    <span className={`payment-status ${selectedRequest.paymentStatus}`}>
+                      {selectedRequest.paymentStatus}
+                    </span>
+                  </div>
+                  
+                  <div className="detail-item">
+                    <label>Total Price:</label>
+                    <span className="total-price">LKR {selectedRequest.totalPrice.toLocaleString()}</span>
+                  </div>
+                  
                   {selectedRequest.assignedCollector && (
-                    <>
-                      <hr />
-                      <p><strong>Assigned Garbage Collector:</strong> {selectedRequest.assignedCollector.name}</p>
-                    </>
+                    <div className="detail-item">
+                      <label>Assigned Collector:</label>
+                      <span>{selectedRequest.assignedCollector.name}</span>
+                    </div>
                   )}
-                </>
-              )}
+                </div>
+                
+                <div className="waste-items-section">
+                  <h4>Waste Items Breakdown</h4>
+                  <div className="waste-items-table">
+                    {selectedRequest.wasteItems.map((item, idx) => (
+                      <div key={idx} className="waste-item-row">
+                        <div className="item-info">
+                          <span className="item-icon">{getWasteIcon(item.wasteType)}</span>
+                          <span className="item-name">{capitalizeFirstLetter(item.wasteType)}</span>
+                        </div>
+                        <div className="item-details">
+                          <span className="weight">{item.weight} kg</span>
+                          <span className="price">LKR {(item.weight * item.pricePerKg).toLocaleString()}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
-            {/* <div className="modal-footer">
-              <button className="close-modal-button" onClick={handleCloseModal}>
-                Close
-              </button>
-            </div> */}
           </div>
         </div>
       )}
@@ -153,6 +254,34 @@ const ViewWasteRequests = () => {
 const capitalizeFirstLetter = (string) => {
   if (!string) return '';
   return string.charAt(0).toUpperCase() + string.slice(1);
+};
+
+// Helper function to get status icon
+const getStatusIcon = (status) => {
+  switch (status) {
+    case 'pending':
+      return <Clock size={16} />;
+    case 'completed':
+      return <CheckCircle size={16} />;
+    case 'cancelled':
+      return <XCircle size={16} />;
+    default:
+      return <AlertCircle size={16} />;
+  }
+};
+
+// Helper function to get waste type icon
+const getWasteIcon = (wasteType) => {
+  switch (wasteType) {
+    case 'food':
+      return '🍽️';
+    case 'cardboard':
+      return '📦';
+    case 'polythene':
+      return '🛍️';
+    default:
+      return '🗑️';
+  }
 };
 
 export default ViewWasteRequests;

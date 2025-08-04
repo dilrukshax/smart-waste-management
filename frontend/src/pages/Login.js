@@ -1,9 +1,19 @@
 import React, { useState, useContext } from 'react';
-import { Form, Button, Alert } from 'react-bootstrap';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import '../styles/Login.css'; // Link to a CSS file for additional styling
+import { useNavigate, Link } from 'react-router-dom';
+import { 
+  Mail, 
+  Lock, 
+  Eye, 
+  EyeOff, 
+  LogIn, 
+  AlertCircle,
+  CheckCircle,
+  Recycle,
+  ArrowRight
+} from 'lucide-react';
+import '../styles/Login.css';
 
 const Login = () => {
   const { setAuth } = useContext(AuthContext);
@@ -16,21 +26,48 @@ const Login = () => {
 
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [success, setSuccess] = useState('');
 
   const { email, password } = formData;
 
-  const onChange = e => setFormData({...formData, [e.target.name]: e.target.value});
+  const onChange = e => {
+    setFormData({...formData, [e.target.name]: e.target.value});
+    // Clear errors when user starts typing
+    if (error) setError('');
+  };
+
+  const validateForm = () => {
+    if (!email.trim()) return 'Email is required';
+    if (!password.trim()) return 'Password is required';
+    return null;
+  };
 
   const onSubmit = async e => {
     e.preventDefault();
+    
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    
+    setError('');
+    setSuccess('');
+    setIsLoading(true);
+    
     try {
       const res = await axios.post('http://localhost:5000/api/auth/login', formData);
+      setSuccess('Login successful! Redirecting...');
       setAuth({ token: res.data.token, user: parseJwt(res.data.token) });
       
-      // Redirect all users to the home page
-      navigate('/');
+      setTimeout(() => {
+        navigate('/');
+      }, 1500);
     } catch(err) {
       setError(err.response?.data?.message || 'Login failed');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -49,50 +86,147 @@ const Login = () => {
 
   return (
     <div className="login-container">
-      <div className="login-box">
-        <h2 className="login-title">Login</h2>
-        <p className="login-subtitle">Enter your credentials to access your account</p>
-        {error && <Alert variant="danger">{error}</Alert>}
-        <Form onSubmit={onSubmit}>
-          
-          <Form.Group controlId="email" className="mb-3">
-            <Form.Label>Email</Form.Label>
-            <Form.Control
-              type="email"
-              name="email"
-              value={email}
-              onChange={onChange}
-              placeholder="Enter your email"
-              required
-              className="input-field"
-            />
-          </Form.Group>
-          
-          <Form.Group controlId="password" className="mb-3">
-            <Form.Label>Password</Form.Label>
-            <div className="password-container">
-              <Form.Control
-                type={showPassword ? "text" : "password"}
-                name="password"
-                value={password}
-                onChange={onChange}
-                placeholder="Enter your password"
-                required
-                className="input-field"
-              />
-              <span
-                className="password-toggle"
-                onClick={togglePasswordVisibility}
-              >
-                {showPassword ? '👁️' : '👁️‍🗨️'}
-              </span>
+      <div className="login-wrapper">
+        {/* Left Side - Welcome Back Section */}
+        <div className="welcome-section">
+          <div className="welcome-content">
+            <div className="brand-logo">
+              <Recycle size={48} />
             </div>
-          </Form.Group>
-          
-          <Button className="login-button" type="submit">
-            Login
-          </Button>
-        </Form>
+            <h1 className="welcome-title">Welcome Back!</h1>
+            <p className="welcome-subtitle">
+              Sign in to your account to continue managing your waste collection services and track your environmental impact.
+            </p>
+            <div className="features-list">
+              <div className="feature-item">
+                <CheckCircle size={20} />
+                <span>Manage your waste requests</span>
+              </div>
+              <div className="feature-item">
+                <CheckCircle size={20} />
+                <span>Track collection status</span>
+              </div>
+              <div className="feature-item">
+                <CheckCircle size={20} />
+                <span>View payment history</span>
+              </div>
+              <div className="feature-item">
+                <CheckCircle size={20} />
+                <span>Monitor environmental impact</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side - Login Form */}
+        <div className="form-section">
+          <div className="form-container">
+            <div className="form-header">
+              <h2 className="form-title">Sign In</h2>
+              <p className="form-subtitle">Enter your credentials to access your account</p>
+            </div>
+
+            {/* Alert Messages */}
+            {error && (
+              <div className="alert alert-error" role="alert" aria-live="polite">
+                <AlertCircle size={16} />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {success && (
+              <div className="alert alert-success" role="alert" aria-live="polite">
+                <CheckCircle size={16} />
+                <span>{success}</span>
+              </div>
+            )}
+
+            <form onSubmit={onSubmit} className="login-form" noValidate>
+              <div className="input-group">
+                <label className="input-label" htmlFor="email">Email Address</label>
+                <div className="input-wrapper">
+                  <Mail size={18} />
+                  <input 
+                    id="email"
+                    type="email" 
+                    name="email" 
+                    value={email} 
+                    onChange={onChange} 
+                    placeholder="Enter your email" 
+                    required 
+                    className="input-field"
+                    aria-describedby={error && error.includes('email') ? 'email-error' : undefined}
+                  />
+                </div>
+              </div>
+
+              <div className="input-group">
+                <label className="input-label" htmlFor="password">Password</label>
+                <div className="input-wrapper password-wrapper">
+                  <Lock size={18} />
+                  <input 
+                    id="password"
+                    type={showPassword ? "text" : "password"} 
+                    name="password" 
+                    value={password} 
+                    onChange={onChange} 
+                    placeholder="Enter your password" 
+                    required 
+                    className="input-field password-field"
+                    aria-describedby={error && error.includes('password') ? 'password-error' : undefined}
+                  />
+                  <button 
+                    type="button" 
+                    className="password-toggle"
+                    onClick={togglePasswordVisibility}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Additional Options */}
+              <div className="form-options">
+                <div className="remember-me">
+                  <input type="checkbox" id="remember" className="checkbox" />
+                  <label htmlFor="remember" className="checkbox-label">Remember me</label>
+                </div>
+                <Link to="/forgot-password" className="forgot-link">
+                  Forgot password?
+                </Link>
+              </div>
+
+              {/* Submit Button */}
+              <button 
+                className={`login-button ${isLoading ? 'loading' : ''}`} 
+                type="submit"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <div className="spinner"></div>
+                    Signing In...
+                  </>
+                ) : (
+                  <>
+                    <LogIn size={18} />
+                    Sign In
+                    <ArrowRight size={18} />
+                  </>
+                )}
+              </button>
+
+              {/* Register Link */}
+              <div className="form-footer">
+                <p className="register-prompt">
+                  Don't have an account? 
+                  <Link to="/register" className="register-link">Create one here</Link>
+                </p>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import AuthContext from '../context/AuthContext';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { Trash2, User, Mail, Phone, Scale, DollarSign, CheckCircle, AlertCircle } from 'lucide-react';
 import '../styles/WasteRequestForm.css'; // Link to custom CSS
 
 const WasteRequestForm = () => {
@@ -83,41 +84,160 @@ const WasteRequestForm = () => {
 
   return (
     <div className="waste-request-container">
-      <h2 className="title">Create Waste Collection Request</h2>
-      {error && <div className="error-message">{error}</div>}
-
-      {/* User Info Section */}
-      <div className="user-info-card">
-        <h5>User Information</h5>
-        <p><strong>Name:</strong> {userInfo.name}</p>
-        <p><strong>Email:</strong> {userInfo.email}</p>
-        <p><strong>Phone:</strong> {userInfo.phoneNumber}</p>
-      </div>
-
-      {/* Waste Request Form */}
-      <form onSubmit={onSubmit} className="waste-form">
-        <h5>Enter Weights for Waste Types</h5>
-        <div className="waste-items-grid">
-          {formData.wasteItems.map((waste) => (
-            <div key={waste.wasteType} className="waste-item-card">
-              <h3>{waste.wasteType.charAt(0).toUpperCase() + waste.wasteType.slice(1)} Waste</h3>
-              <label htmlFor={`weight-${waste.wasteType}`}>Weight (kg)</label>
-              <input
-                type="number"
-                id={`weight-${waste.wasteType}`}
-                min="0"
-                step="0.1"
-                value={waste.weight}
-                onChange={(e) => handleWeightChange(e, waste.wasteType)}
-                required
-                className="weight-input"
-              />
-            </div>
-          ))}
+      <div className="container-inner">
+        {/* Header Section */}
+        <div className="form-header">
+          <div className="header-icon">
+            <Trash2 size={32} />
+          </div>
+          <h1 className="form-title">Create Waste Collection Request</h1>
+          <p className="form-subtitle">Schedule your waste pickup and help build a cleaner environment</p>
         </div>
 
-        <button type="submit" className="submit-btn">Proceed to Payment</button>
-      </form>
+        {error && (
+          <div className="alert alert-error">
+            <AlertCircle size={20} />
+            <span>{error}</span>
+          </div>
+        )}
+
+        <div className="form-layout">
+          {/* User Info Section */}
+          <div className="user-info-section">
+            <div className="section-header">
+              <User size={24} />
+              <h2>Your Information</h2>
+            </div>
+            <div className="user-info-card">
+              <div className="info-item">
+                <User size={18} className="info-icon" />
+                <div className="info-content">
+                  <label>Full Name</label>
+                  <span>{userInfo.name || 'Loading...'}</span>
+                </div>
+              </div>
+              <div className="info-item">
+                <Mail size={18} className="info-icon" />
+                <div className="info-content">
+                  <label>Email Address</label>
+                  <span>{userInfo.email || 'Loading...'}</span>
+                </div>
+              </div>
+              <div className="info-item">
+                <Phone size={18} className="info-icon" />
+                <div className="info-content">
+                  <label>Phone Number</label>
+                  <span>{userInfo.phoneNumber || 'Not provided'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Waste Request Form */}
+          <div className="waste-form-section">
+            <div className="section-header">
+              <Scale size={24} />
+              <h2>Waste Details</h2>
+            </div>
+            
+            <form onSubmit={onSubmit} className="waste-form">
+              <p className="form-description">
+                Enter the weight for each type of waste you want to collect. Our rates are competitive and eco-friendly!
+              </p>
+              
+              <div className="waste-items-grid">
+                {formData.wasteItems.map((waste) => {
+                  const pricePerKg = waste.wasteType === 'food' ? 50 : waste.wasteType === 'cardboard' ? 100 : 150;
+                  const totalPrice = waste.weight * pricePerKg;
+                  
+                  return (
+                    <div key={waste.wasteType} className="waste-item-card">
+                      <div className="card-header">
+                        <div className="waste-icon">
+                          {waste.wasteType === 'food' && '🍽️'}
+                          {waste.wasteType === 'cardboard' && '📦'}
+                          {waste.wasteType === 'polythene' && '🛍️'}
+                        </div>
+                        <h3 className="waste-title">
+                          {waste.wasteType.charAt(0).toUpperCase() + waste.wasteType.slice(1)} Waste
+                        </h3>
+                        <span className="price-tag">LKR {pricePerKg}/kg</span>
+                      </div>
+                      
+                      <div className="input-group">
+                        <label htmlFor={`weight-${waste.wasteType}`} className="input-label">
+                          <Scale size={16} />
+                          Weight (kg)
+                        </label>
+                        <input
+                          type="number"
+                          id={`weight-${waste.wasteType}`}
+                          min="0"
+                          step="0.1"
+                          value={waste.weight}
+                          onChange={(e) => handleWeightChange(e, waste.wasteType)}
+                          className="weight-input"
+                          placeholder="0.0"
+                        />
+                      </div>
+                      
+                      {waste.weight > 0 && (
+                        <div className="price-display">
+                          <DollarSign size={16} />
+                          <span>LKR {totalPrice.toFixed(2)}</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Total Price Display */}
+              {formData.wasteItems.some(item => item.weight > 0) && (
+                <div className="total-section">
+                  <div className="total-card">
+                    <div className="total-header">
+                      <CheckCircle size={24} />
+                      <h3>Order Summary</h3>
+                    </div>
+                    <div className="total-breakdown">
+                      {formData.wasteItems.map((waste) => {
+                        if (waste.weight > 0) {
+                          const pricePerKg = waste.wasteType === 'food' ? 50 : waste.wasteType === 'cardboard' ? 100 : 150;
+                          const totalPrice = waste.weight * pricePerKg;
+                          return (
+                            <div key={waste.wasteType} className="breakdown-item">
+                              <span className="item-name">
+                                {waste.wasteType.charAt(0).toUpperCase() + waste.wasteType.slice(1)} ({waste.weight}kg)
+                              </span>
+                              <span className="item-price">LKR {totalPrice.toFixed(2)}</span>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })}
+                      <div className="total-line">
+                        <span className="total-label">Total Amount</span>
+                        <span className="total-amount">
+                          LKR {formData.wasteItems.reduce((total, waste) => {
+                            const pricePerKg = waste.wasteType === 'food' ? 50 : waste.wasteType === 'cardboard' ? 100 : 150;
+                            return total + (waste.weight * pricePerKg);
+                          }, 0).toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <button type="submit" className="submit-btn">
+                <CheckCircle size={20} />
+                Proceed to Payment
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

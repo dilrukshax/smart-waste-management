@@ -1,0 +1,426 @@
+/* src/styles/Footer.css */
+
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+
+/* Variables */
+:root {
+  --footer-bg: #1f2937;
+  --footer-main-bg: #374151;
+  --footer-text: #d1d5db;
+  --footer-text-light: #9ca3af;
+  --footer-accent: #10b981;
+  --footer-accent-hover: #059669;
+  --footer-border: #4b5563;
+  --newsletter-bg: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --white: #ffffff;
+  --shadow: rgba(0, 0, 0, 0.1);
+}
+
+/* Main Footer Container */
+.footer-modern {
+  margin-top: auto;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Newsletter Section */
+.newsletter-section {
+  background: var(--newsletter-bg);
+  padding: 4rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.newsletter-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="10" cy="10" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="30" cy="20" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="60" cy="15" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="20" cy="40" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="70" cy="45" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="60" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="55" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="15" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="55" cy="80" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="85" cy="85" r="1" fill="rgba(255,255,255,0.1)"/></svg>');
+  pointer-events: none;
+}
+
+.newsletter-content {
+  color: var(--white);
+  position: relative;
+  z-index: 2;
+}
+
+.newsletter-title {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.newsletter-subtitle {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  margin-bottom: 0;
+  line-height: 1.6;
+}
+
+.newsletter-form {
+  position: relative;
+  z-index: 2;
+}
+
+.input-group-modern {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 1rem;
+  align-items: stretch;
+}
+
+.newsletter-input {
+  flex: 1;
+  padding: 12px 20px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--white);
+  font-size: 1rem;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.newsletter-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.newsletter-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+.newsletter-btn {
+  background: var(--white) !important;
+  color: var(--footer-accent) !important;
+  border: none !important;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.newsletter-btn:hover {
+  background: #f8fafc !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.newsletter-disclaimer {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.875rem;
+}
+
+.newsletter-disclaimer a {
+  color: var(--white);
+  text-decoration: underline;
+}
+
+.newsletter-disclaimer a:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Main Footer */
+.footer-main {
+  background: var(--footer-main-bg);
+  padding: 4rem 0 2rem;
+  color: var(--footer-text);
+}
+
+/* Footer Brand */
+.footer-brand {
+  margin-bottom: 2rem;
+}
+
+.brand-logo-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.logo-icon-footer {
+  background: var(--footer-accent);
+  color: var(--white);
+  padding: 10px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-text-footer {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--white);
+}
+
+.footer-description {
+  color: var(--footer-text-light);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+/* Social Links */
+.social-links {
+  display: flex;
+  gap: 12px;
+}
+
+.social-link {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--footer-text);
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.social-link:hover {
+  background: var(--footer-accent);
+  color: var(--white);
+  transform: translateY(-3px);
+}
+
+/* Footer Sections */
+.footer-section {
+  margin-bottom: 2rem;
+}
+
+.footer-title {
+  color: var(--white);
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.footer-title::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 30px;
+  height: 3px;
+  background: var(--footer-accent);
+  border-radius: 2px;
+}
+
+/* Footer Navigation */
+.footer-nav {
+  gap: 0;
+}
+
+.footer-link {
+  color: var(--footer-text-light) !important;
+  padding: 8px 0 !important;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.footer-link:hover {
+  color: var(--footer-accent) !important;
+  padding-left: 8px !important;
+}
+
+.footer-link::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 2px;
+  background: var(--footer-accent);
+  transition: width 0.3s ease;
+}
+
+.footer-link:hover::before {
+  width: 4px;
+}
+
+/* Contact Info */
+.contact-info {
+  margin-bottom: 2rem;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  color: var(--footer-text-light);
+  font-size: 0.9rem;
+}
+
+.contact-icon {
+  color: var(--footer-accent);
+  flex-shrink: 0;
+}
+
+/* Business Hours */
+.business-hours {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border-left: 4px solid var(--footer-accent);
+}
+
+.hours-title {
+  color: var(--white);
+  font-weight: 600;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.hours-text {
+  color: var(--footer-text-light);
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.hours-text:last-child {
+  margin-bottom: 0;
+}
+
+/* Footer Bottom */
+.footer-bottom {
+  background: var(--footer-bg);
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--footer-border);
+}
+
+.copyright-text {
+  color: var(--footer-text-light);
+  margin: 0;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.heart-icon {
+  color: #ef4444;
+  animation: heartbeat 2s infinite;
+}
+
+@keyframes heartbeat {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.footer-bottom-nav {
+  gap: 0;
+}
+
+.footer-bottom-link {
+  color: var(--footer-text-light) !important;
+  font-size: 0.875rem;
+  padding: 4px 16px !important;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer-bottom-link:hover {
+  color: var(--footer-accent) !important;
+}
+
+.footer-bottom-link:not(:last-child) {
+  border-right: 1px solid var(--footer-border);
+}
+
+/* Responsive Design */
+@media (max-width: 991.98px) {
+  .newsletter-section {
+    padding: 3rem 0;
+  }
+  
+  .newsletter-title {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+  
+  .newsletter-subtitle {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  
+  .input-group-modern {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .newsletter-btn {
+    justify-content: center;
+  }
+  
+  .footer-main {
+    padding: 3rem 0 2rem;
+  }
+  
+  .footer-section {
+    text-align: center;
+  }
+  
+  .social-links {
+    justify-content: center;
+  }
+  
+  .contact-info {
+    text-align: left;
+  }
+  
+  .footer-bottom-nav {
+    justify-content: center !important;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+  
+  .copyright-text {
+    text-align: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .newsletter-title {
+    font-size: 1.25rem;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .brand-text-footer {
+    font-size: 1.25rem;
+  }
+  
+  .footer-bottom-link {
+    padding: 4px 8px !important;
+    font-size: 0.8rem;
+  }
+  
+  .business-hours {
+    padding: 1rem;
+  }
+}
