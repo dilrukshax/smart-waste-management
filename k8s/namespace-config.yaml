@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: smart-waste
+  labels:
+    name: smart-waste
+    environment: production
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: smart-waste-config
+  namespace: smart-waste
+data:
+  NODE_ENV: "production"
+  MONGODB_DATABASE: "smart_waste"
+  REDIS_PORT: "6379"
+  BACKEND_PORT: "3001"
+  FRONTEND_PORT: "3000"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: smart-waste-secrets
+  namespace: smart-waste
+type: Opaque
+data:
+  # Base64 encoded values - replace with actual secrets
+  mongodb-username: YWRtaW4=  # admin
+  mongodb-password: cGFzc3dvcmQxMjM=  # password123
+  jwt-secret: eW91ci1qd3Qtc2VjcmV0LWtleQ==  # your-jwt-secret-key
+  stripe-secret-key: eW91ci1zdHJpcGUtc2VjcmV0LWtleQ==  # your-stripe-secret-key
+  stripe-publishable-key: eW91ci1zdHJpcGUtcHVibGlzaGFibGUta2V5  # your-stripe-publishable-key

@@ -1,0 +1,315 @@
+name: CD - Deploy to Azure
+
+on:
+  workflow_run:
+    workflows: ["CI - Build and Test"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+        - dev
+        - staging
+        - prod
+      image_tag:
+        description: 'Docker image tag to deploy'
+        required: false
+        default: 'latest'
+
+env:
+  REGISTRY: ${{ secrets.ACR_LOGIN_SERVER }}
+  IMAGE_NAME: smart-waste
+
+jobs:
+  # Deploy infrastructure
+  infrastructure:
+    name: Deploy Infrastructure
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'dev' }}
+    defaults:
+      run:
+        working-directory: ./terraform
+    
+    outputs:
+      resource-group: ${{ steps.terraform.outputs.resource_group_name }}
+      aks-cluster: ${{ steps.terraform.outputs.aks_cluster_name }}
+      acr-name: ${{ steps.terraform.outputs.acr_name }}
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.0"
+          terraform_wrapper: false
+          
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          
+      - name: Setup Terraform Backend
+        run: |
+          # Create storage account for Terraform state if it doesn't exist
+          az group create --name "rg-terraform-state" --location "East US" || true
+          az storage account create \
+            --name "tfstate${{ github.run_number }}" \
+            --resource-group "rg-terraform-state" \
+            --location "East US" \
+            --sku "Standard_LRS" || true
+          az storage container create \
+            --name "tfstate" \
+            --account-name "tfstate${{ github.run_number }}" || true
+            
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=rg-terraform-state" \
+            -backend-config="storage_account_name=tfstate${{ github.run_number }}" \
+            -backend-config="container_name=tfstate" \
+            -backend-config="key=smart-waste-${{ github.event.inputs.environment || 'dev' }}.tfstate"
+            
+      - name: Terraform Plan
+        run: |
+          terraform plan \
+            -var="environment=${{ github.event.inputs.environment || 'dev' }}" \
+            -out=tfplan
+            
+      - name: Terraform Apply
+        id: terraform
+        run: |
+          terraform apply -auto-approve tfplan
+          
+          # Export outputs for next jobs
+          echo "resource_group_name=$(terraform output -raw resource_group_name)" >> $GITHUB_OUTPUT
+          echo "aks_cluster_name=$(terraform output -raw aks_cluster_name)" >> $GITHUB_OUTPUT
+          echo "acr_name=$(terraform output -raw acr_name)" >> $GITHUB_OUTPUT
+          
+      - name: Upload Terraform Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan
+          path: terraform/tfplan
+          retention-days: 5
+
+  # Deploy application to AKS
+  deploy:
+    name: Deploy Application
+    runs-on: ubuntu-latest
+    needs: infrastructure
+    environment: ${{ github.event.inputs.environment || 'dev' }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+          
+      - name: Get AKS credentials
+        run: |
+          az aks get-credentials \
+            --resource-group ${{ needs.infrastructure.outputs.resource-group }} \
+            --name ${{ needs.infrastructure.outputs.aks-cluster }} \
+            --overwrite-existing
+            
+      - name: Create ACR secret in Kubernetes
+        run: |
+          # Get ACR credentials
+          ACR_USERNAME=$(az acr credential show --name ${{ needs.infrastructure.outputs.acr-name }} --query username -o tsv)
+          ACR_PASSWORD=$(az acr credential show --name ${{ needs.infrastructure.outputs.acr-name }} --query passwords[0].value -o tsv)
+          
+          # Create or update the secret
+          kubectl create namespace smart-waste --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create secret docker-registry acr-secret \
+            --namespace=smart-waste \
+            --docker-server=${{ env.REGISTRY }} \
+            --docker-username=$ACR_USERNAME \
+            --docker-password=$ACR_PASSWORD \
+            --dry-run=client -o yaml | kubectl apply -f -
+            
+      - name: Create application secrets
+        run: |
+          # Create secrets from GitHub secrets
+          kubectl create secret generic smart-waste-secrets \
+            --namespace=smart-waste \
+            --from-literal=mongodb-username=${{ secrets.MONGODB_USERNAME }} \
+            --from-literal=mongodb-password=${{ secrets.MONGODB_PASSWORD }} \
+            --from-literal=jwt-secret=${{ secrets.JWT_SECRET }} \
+            --from-literal=stripe-secret-key=${{ secrets.STRIPE_SECRET_KEY }} \
+            --from-literal=stripe-publishable-key=${{ secrets.STRIPE_PUBLISHABLE_KEY }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+            
+      - name: Update deployment manifests
+        run: |
+          # Set image tag
+          IMAGE_TAG=${{ github.event.inputs.image_tag || github.sha }}
+          export ACR_NAME=${{ needs.infrastructure.outputs.acr-name }}
+          export IMAGE_TAG=$IMAGE_TAG
+          
+          # Replace placeholders in deployment files
+          envsubst < k8s/deployment.yaml > k8s/deployment-updated.yaml
+          
+      - name: Deploy to Kubernetes
+        run: |
+          # Apply manifests in order
+          kubectl apply -f k8s/namespace-config.yaml
+          kubectl apply -f k8s/database.yaml
+          kubectl apply -f k8s/deployment-updated.yaml
+          kubectl apply -f k8s/service.yaml
+          kubectl apply -f k8s/ingress.yaml
+          
+      - name: Wait for deployment
+        run: |
+          # Wait for deployments to be ready
+          kubectl wait --for=condition=available --timeout=600s deployment/mongodb -n smart-waste
+          kubectl wait --for=condition=available --timeout=600s deployment/redis -n smart-waste
+          kubectl wait --for=condition=available --timeout=600s deployment/smart-waste-app -n smart-waste
+          
+      - name: Get deployment status
+        run: |
+          echo "=== Deployment Status ==="
+          kubectl get deployments -n smart-waste
+          echo ""
+          echo "=== Service Status ==="
+          kubectl get services -n smart-waste
+          echo ""
+          echo "=== Pod Status ==="
+          kubectl get pods -n smart-waste
+          echo ""
+          echo "=== Ingress Status ==="
+          kubectl get ingress -n smart-waste
+          
+      - name: Get application URLs
+        run: |
+          echo "=== Application URLs ==="
+          
+          # Get LoadBalancer IP
+          LB_IP=$(kubectl get service smart-waste-app-loadbalancer -n smart-waste -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          if [ ! -z "$LB_IP" ]; then
+            echo "Frontend: http://$LB_IP"
+            echo "Backend: http://$LB_IP:8080"
+          fi
+          
+          # Get Ingress URLs
+          INGRESS_IP=$(kubectl get ingress smart-waste-ingress -n smart-waste -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          if [ ! -z "$INGRESS_IP" ]; then
+            echo "Ingress IP: $INGRESS_IP"
+            echo "Add DNS records:"
+            echo "smart-waste.yourdomain.com -> $INGRESS_IP"
+            echo "api.smart-waste.yourdomain.com -> $INGRESS_IP"
+          fi
+
+  # Health check and smoke tests
+  health-check:
+    name: Health Check
+    runs-on: ubuntu-latest
+    needs: [infrastructure, deploy]
+    if: success()
+    
+    steps:
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+          
+      - name: Get AKS credentials
+        run: |
+          az aks get-credentials \
+            --resource-group ${{ needs.infrastructure.outputs.resource-group }} \
+            --name ${{ needs.infrastructure.outputs.aks-cluster }} \
+            --overwrite-existing
+            
+      - name: Check application health
+        run: |
+          echo "Waiting for application to be ready..."
+          sleep 60
+          
+          # Check if pods are running
+          kubectl get pods -n smart-waste
+          
+          # Port forward to test locally
+          kubectl port-forward -n smart-waste service/smart-waste-backend 3001:3001 &
+          sleep 10
+          
+          # Test backend health endpoint
+          curl -f http://localhost:3001/health || echo "Health check failed"
+          
+          # Kill port-forward
+          pkill -f "kubectl port-forward"
+          
+      - name: Run smoke tests
+        run: |
+          echo "Running smoke tests..."
+          
+          # Port forward for testing
+          kubectl port-forward -n smart-waste service/smart-waste-frontend 3000:3000 &
+          kubectl port-forward -n smart-waste service/smart-waste-backend 3001:3001 &
+          sleep 15
+          
+          # Test frontend is serving
+          curl -f http://localhost:3000 || echo "Frontend smoke test failed"
+          
+          # Test backend API endpoints
+          curl -f http://localhost:3001/api/health || echo "Backend API smoke test failed"
+          
+          # Cleanup
+          pkill -f "kubectl port-forward"
+
+  # Cleanup on failure
+  cleanup:
+    name: Cleanup on Failure
+    runs-on: ubuntu-latest
+    needs: [infrastructure, deploy, health-check]
+    if: failure()
+    
+    steps:
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          
+      - name: Cleanup failed deployment
+        run: |
+          echo "Cleaning up failed deployment..."
+          # Add cleanup logic here if needed
+          # For example, rollback to previous version
+          
+  # Notify deployment status
+  notify:
+    name: Notify Deployment Status
+    runs-on: ubuntu-latest
+    needs: [infrastructure, deploy, health-check]
+    if: always()
+    
+    steps:
+      - name: Notify success
+        if: ${{ needs.deploy.result == 'success' && needs.health-check.result == 'success' }}
+        run: |
+          echo "✅ Deployment to ${{ github.event.inputs.environment || 'dev' }} completed successfully!"
+          echo "Image deployed: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.image_tag || github.sha }}"
+          
+      - name: Notify failure
+        if: ${{ needs.deploy.result == 'failure' || needs.health-check.result == 'failure' }}
+        run: |
+          echo "❌ Deployment to ${{ github.event.inputs.environment || 'dev' }} failed!"
+          exit 1

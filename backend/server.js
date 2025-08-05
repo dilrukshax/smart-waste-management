@@ -18,6 +18,7 @@ const adminRoutes = require('./routes/admin');
 const collectorRoutes = require('./routes/collector');
 const userRoutes = require('./routes/user');
 const stripeRoutes = require('./routes/stripe');
+const createHealthCheckEndpoint = require('./middleware/healthcheck');
 
 const app = express();
 
@@ -45,6 +46,9 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/collector', collectorRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/stripe', stripeRoutes);
+
+// Add health check endpoints
+createHealthCheckEndpoint(app);
 
 // Error handling middleware (optional)
 app.use((err, req, res, next) => {

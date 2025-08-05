@@ -1,0 +1,28 @@
+# Development environment configuration
+environment = "dev"
+location    = "East US"
+
+# AKS Configuration
+kubernetes_version = "1.28.0"
+node_count        = 2
+node_vm_size      = "Standard_D2s_v3"
+user_node_count   = 2
+user_node_vm_size = "Standard_D2s_v3"
+
+# Feature flags
+enable_application_gateway = false
+enable_monitoring         = true
+
+# Resource configuration
+acr_sku           = "Standard"
+key_vault_sku     = "standard"
+log_retention_days = 30
+
+# Domain configuration
+domain_name = "dev.smart-waste.com"
+
+# Additional tags
+tags = {
+  CostCenter = "Engineering"
+  Owner      = "DevOps-Team"
+}
