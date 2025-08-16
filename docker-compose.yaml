@@ -54,7 +54,7 @@ services:
       - /app/backend/node_modules
     networks:
       - smart-waste-network
-    command: npm run dev
+    command: npm start
 
   # Frontend React App
   frontend:
