@@ -1,4 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
+import { API_CONFIG } from '../config/api';
 import AuthContext from '../context/AuthContext';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -22,7 +23,7 @@ const WasteRequestForm = () => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/auth/profile', {
+        const res = await axios.get(API_CONFIG.AUTH.PROFILE, {
           headers: { Authorization: `Bearer ${auth.token}` },
         });
         setUserInfo(res.data);

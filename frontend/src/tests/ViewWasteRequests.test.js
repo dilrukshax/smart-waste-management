@@ -46,7 +46,7 @@ describe('ViewWasteRequests Component', () => {
     ];
 
     // Mock API call
-    mockAxios.onGet('http://localhost:5000/api/request/user/my-requests').reply(200, mockRequests);
+    mockAxios.onGet('http://localhost:3001/api/request/user/my-requests').reply(200, mockRequests);
 
     render(
       <AuthContext.Provider value={mockAuth}>
@@ -66,7 +66,7 @@ describe('ViewWasteRequests Component', () => {
 
   it('displays an error message if fetching requests fails', async () => {
     // Mock API error response
-    mockAxios.onGet('http://localhost:5000/api/request/user/my-requests').reply(500);
+    mockAxios.onGet('http://localhost:3001/api/request/user/my-requests').reply(500);
 
     render(
       <AuthContext.Provider value={mockAuth}>
@@ -95,7 +95,7 @@ describe('ViewWasteRequests Component', () => {
     ];
 
     // Mock API call
-    mockAxios.onGet('http://localhost:5000/api/request/user/my-requests').reply(200, mockRequests);
+    mockAxios.onGet('http://localhost:3001/api/request/user/my-requests').reply(200, mockRequests);
 
     render(
       <AuthContext.Provider value={mockAuth}>
@@ -123,7 +123,7 @@ describe('ViewWasteRequests Component', () => {
 
   it('displays a message if no requests are available', async () => {
     // Mock API call with an empty response
-    mockAxios.onGet('http://localhost:5000/api/request/user/my-requests').reply(200, []);
+    mockAxios.onGet('http://localhost:3001/api/request/user/my-requests').reply(200, []);
 
     render(
       <AuthContext.Provider value={mockAuth}>

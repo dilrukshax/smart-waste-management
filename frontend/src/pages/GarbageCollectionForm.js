@@ -1,6 +1,7 @@
 // components/GarbageCollectionForm.js
 
 import React, { useContext, useState } from 'react';
+import { API_CONFIG } from '../config/api';
 import AuthContext from '../context/AuthContext';
 import axios from 'axios';
 import { 
@@ -105,7 +106,7 @@ const GarbageCollectionForm = ({ user, onClose }) => {
       }));
 
       await axios.post(
-        `http://localhost:5000/api/collector/collect-garbage/${user._id}`,
+        `http://localhost:3001/api/collector/collect-garbage/${user._id}`,
         { 
           wasteData: enhancedWasteData,
           totalWeight: calculateTotalWeight(),

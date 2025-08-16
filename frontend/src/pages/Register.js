@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
+import { API_CONFIG } from '../config/api';
 import { 
   User, 
   Mail, 
@@ -65,7 +66,7 @@ const Register = () => {
     setIsLoading(true);
     
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/register', formData);
+      const res = await axios.post(API_CONFIG.AUTH.REGISTER, formData);
       setSuccess('Registration successful! Redirecting...');
       setAuth({ token: res.data.token, user: parseJwt(res.data.token) });
       

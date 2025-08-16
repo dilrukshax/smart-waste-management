@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { API_CONFIG } from '../config/api';
 import AuthContext from '../context/AuthContext';
 import axios from 'axios';
 import { Eye, Calendar, User, DollarSign, Package, Clock, CheckCircle, AlertCircle, XCircle, Loader, X } from 'lucide-react';
@@ -17,7 +18,7 @@ const ViewWasteRequests = () => {
   useEffect(() => {
     const fetchUserRequests = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/request/user/my-requests', {
+        const response = await axios.get(API_CONFIG.REQUEST.USER_REQUESTS, {
           headers: {
             Authorization: `Bearer ${auth.token}`,
           },

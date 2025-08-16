@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
+import { API_CONFIG } from '../config/api';
 import { 
   Mail, 
   Lock, 
@@ -57,7 +58,7 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/login', formData);
+      const res = await axios.post(API_CONFIG.AUTH.LOGIN, formData);
       setSuccess('Login successful! Redirecting...');
       setAuth({ token: res.data.token, user: parseJwt(res.data.token) });
       

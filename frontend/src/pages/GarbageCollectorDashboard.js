@@ -1,6 +1,7 @@
 // components/GarbageCollectorDashboard.js
 
 import React, { useContext, useEffect, useState } from 'react';
+import { API_CONFIG } from '../config/api';
 import AuthContext from '../context/AuthContext';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -55,7 +56,7 @@ const GarbageCollectorDashboard = () => {
     setIsLoading(true);
     setError('');
     try {
-      const res = await axios.get('http://localhost:5000/api/request/collector/assigned-requests', {
+      const res = await axios.get(API_CONFIG.REQUEST.COLLECTOR_ASSIGNED, {
         headers: {
           Authorization: `Bearer ${auth.token}`, // Include token for authentication
         },
@@ -142,7 +143,7 @@ const GarbageCollectorDashboard = () => {
       setSuccessMessage('');
       
       await axios.put(
-        `http://localhost:5000/api/request/collector/complete/${requestId}`,
+        `http://localhost:3001/api/request/collector/complete/${requestId}`,
         {}, // No body needed as per backend implementation
         {
           headers: {

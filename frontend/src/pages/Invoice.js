@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { API_CONFIG } from '../config/api';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
@@ -33,7 +34,7 @@ const Invoice = () => {
       setIsLoading(true);
       setError('');
       try {
-        const res = await axios.get(`http://localhost:5000/api/request/${id}`);
+        const res = await axios.get(`http://localhost:3001/api/request/${id}`);
         setRequest(res.data);
       } catch (err) {
         console.error('Error fetching request data:', err);

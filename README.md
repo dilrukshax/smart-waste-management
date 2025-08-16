@@ -7,6 +7,7 @@
   <img src="https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express.js Badge" />
   <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React Badge" />
   <img src="https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB Badge" />
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Badge" />
 </div>
 
 
@@ -18,6 +19,7 @@ The **Smart Waste Management System** offers a comprehensive approach to handlin
 - **Waste level tracking** for real-time insights
 - **Special waste requests** by users
 - **Administrative dashboards** for streamlined management
+- **Centralized API configuration** for easy deployment management
 
 By supporting multiple roles, this system improves both user experience and operational efficiency.
 

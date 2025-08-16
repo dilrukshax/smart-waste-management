@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { API_CONFIG } from '../config/api';
 import AuthContext from '../context/AuthContext';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -42,10 +43,10 @@ const AdminDashboard = () => {
       setLoading(true);
       try {
         const [requestsRes, collectorsRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/request/admin/requests', {
+          axios.get(API_CONFIG.REQUEST.ADMIN_REQUESTS, {
             headers: { Authorization: `Bearer ${auth.token}` },
           }),
-          axios.get('http://localhost:5000/api/auth/garbage-collectors', {
+          axios.get(API_CONFIG.AUTH.GARBAGE_COLLECTORS, {
             headers: { Authorization: `Bearer ${auth.token}` },
           })
         ]);
@@ -73,13 +74,13 @@ const AdminDashboard = () => {
 
       setLoading(true);
       await axios.put(
-        `http://localhost:5000/api/request/admin/assign/${requestId}`,
+        `http://localhost:3001/api/request/admin/assign/${requestId}`,
         { collectorId: selectedCollector[requestId] },
         { headers: { Authorization: `Bearer ${auth.token}` } }
       );
 
       // Reload requests after assigning
-      const res = await axios.get('http://localhost:5000/api/request/admin/requests', {
+      const res = await axios.get(API_CONFIG.REQUEST.ADMIN_REQUESTS, {
         headers: { Authorization: `Bearer ${auth.token}` },
       });
       
@@ -113,12 +114,12 @@ const AdminDashboard = () => {
 
     try {
       setLoading(true);
-      await axios.delete(`http://localhost:5000/api/request/${requestId}`, {
+      await axios.delete(`http://localhost:3001/api/request/${requestId}`, {
         headers: { Authorization: `Bearer ${auth.token}` },
       });
       
       // Refresh requests after deletion
-      const res = await axios.get('http://localhost:5000/api/request/admin/requests', {
+      const res = await axios.get(API_CONFIG.REQUEST.ADMIN_REQUESTS, {
         headers: { Authorization: `Bearer ${auth.token}` },
       });
       
@@ -169,7 +170,7 @@ const AdminDashboard = () => {
   const refreshData = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('http://localhost:5000/api/request/admin/requests', {
+      const res = await axios.get(API_CONFIG.REQUEST.ADMIN_REQUESTS, {
         headers: { Authorization: `Bearer ${auth.token}` },
       });
       setRequests(res.data);

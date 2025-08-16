@@ -69,7 +69,7 @@ describe('GarbageCollectionForm Component', () => {
 
   it('submits the form successfully and shows success alert', async () => {
     // Mock API call for garbage collection submission
-    mockAxios.onPost(`http://localhost:5000/api/collector/collect-garbage/${mockUser._id}`).reply(200);
+    mockAxios.onPost(`http://localhost:3001/api/collector/collect-garbage/${mockUser._id}`).reply(200);
 
     const mockOnClose = jest.fn();
 
@@ -93,7 +93,7 @@ describe('GarbageCollectionForm Component', () => {
 
   it('shows error alert when form submission fails', async () => {
     // Mock API call to simulate a failed request
-    mockAxios.onPost(`http://localhost:5000/api/collector/collect-garbage/${mockUser._id}`).reply(500);
+    mockAxios.onPost(`http://localhost:3001/api/collector/collect-garbage/${mockUser._id}`).reply(500);
 
     const mockOnClose = jest.fn();
 

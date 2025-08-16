@@ -1,6 +1,7 @@
 // components/CollectorAssignedUsers.js
 
 import React, { useContext, useEffect, useState } from 'react';
+import { API_CONFIG } from '../config/api';
 import AuthContext from '../context/AuthContext';
 import axios from 'axios';
 import { Table, Button } from 'react-bootstrap';
@@ -15,7 +16,7 @@ const CollectorAssignedUsers = () => {
   useEffect(() => {
     const fetchAssignedUsers = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/collector/assigned-users', {
+        const res = await axios.get(API_CONFIG.COLLECTOR.ASSIGNED_USERS, {
           headers: { Authorization: `Bearer ${auth.token}` },
         });
         setAssignedUsers(res.data);

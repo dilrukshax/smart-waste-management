@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 import { storage } from '../firebase'; // Import Firebase storage
+import { API_CONFIG } from '../config/api';
 import { 
   User, 
   Mail, 
@@ -41,7 +42,7 @@ const Profile = () => {
     const fetchUserInfo = async () => {
       setIsLoading(true);
       try {
-        const res = await axios.get('http://localhost:5000/api/auth/profile', {
+        const res = await axios.get(API_CONFIG.AUTH.PROFILE, {
           headers: { Authorization: `Bearer ${auth.token}` },
         });
         setUserInfo(res.data);
@@ -166,7 +167,7 @@ const Profile = () => {
 
     try {
       const updatedProfile = { ...userInfo, profilePicUrl: downloadURL };
-      const res = await axios.put('http://localhost:5000/api/auth/profile', updatedProfile, {
+      const res = await axios.put(API_CONFIG.AUTH.PROFILE, updatedProfile, {
         headers: { Authorization: `Bearer ${auth.token}` },
       });
       setSuccessMessage('Profile updated successfully!');

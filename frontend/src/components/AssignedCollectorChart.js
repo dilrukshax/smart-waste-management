@@ -1,6 +1,7 @@
 // components/AssignedCollectorChart.js
 
 import React, { useEffect, useState } from 'react';
+import { API_CONFIG } from '../config/api';
 import { Bar } from 'react-chartjs-2';
 import axios from 'axios';
 import {
@@ -35,7 +36,7 @@ const AssignedCollectorChart = () => {
           return;
         }
 
-        const res = await axios.get('http://localhost:5000/api/admin/collector-assignments', {
+        const res = await axios.get(API_CONFIG.ADMIN.COLLECTOR_ASSIGNMENTS, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

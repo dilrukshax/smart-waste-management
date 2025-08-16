@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { API_CONFIG } from '../config/api';
 import AuthContext from '../context/AuthContext';
 import axios from 'axios';
 import { 
@@ -34,13 +35,13 @@ const UserDashboard = () => {
     const fetchData = async () => {
       try {
         // Fetch invoices
-        const invoiceRes = await axios.get('http://localhost:5000/api/user/invoices', {
+        const invoiceRes = await axios.get(API_CONFIG.USER.INVOICES, {
           headers: { Authorization: `Bearer ${auth.token}` },
         });
         setInvoices(invoiceRes.data);
 
         // Fetch user requests
-        const requestRes = await axios.get('http://localhost:5000/api/request/user/my-requests', {
+        const requestRes = await axios.get(API_CONFIG.REQUEST.USER_REQUESTS, {
           headers: { Authorization: `Bearer ${auth.token}` },
         });
         setRequests(requestRes.data);

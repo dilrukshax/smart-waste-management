@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { API_CONFIG } from '../config/api';
 import { Line } from 'react-chartjs-2'; // Using Line chart for trend visualization
 import axios from 'axios';
 import {
@@ -49,7 +50,7 @@ const MonthlyRequestsChart = () => {
         }
 
         // Make API request with Authorization header
-        const res = await axios.get('http://localhost:5000/api/admin/requests-per-month', {
+        const res = await axios.get(API_CONFIG.ADMIN.REQUESTS_PER_MONTH, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
