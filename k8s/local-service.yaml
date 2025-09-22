@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+  namespace: smart-waste
+  labels:
+    app: mongodb
+    tier: database
+spec:
+  type: ClusterIP
+  ports:
+  - port: 27017
+    targetPort: 27017
+    protocol: TCP
+    name: mongodb
+  selector:
+    app: mongodb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: smart-waste
+  labels:
+    app: redis
+    tier: cache
+spec:
+  type: ClusterIP
+  ports:
+  - port: 6379
+    targetPort: 6379
+    protocol: TCP
+    name: redis
+  selector:
+    app: redis
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: smart-waste
+  labels:
+    app: backend
+    tier: application
+spec:
+  type: ClusterIP  # Internal access only
+  ports:
+  - port: 3001
+    targetPort: 3001
+    protocol: TCP
+    name: http
+  selector:
+    app: backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: smart-waste
+  labels:
+    app: frontend
+    tier: presentation
+spec:
+  type: NodePort  # For easy local access
+  ports:
+  - port: 3000
+    targetPort: 3000
+    nodePort: 30000  # Access via localhost:30000
+    protocol: TCP
+    name: http
+  selector:
+    app: frontend
+---
+# Optional: LoadBalancer service for external access (works with Docker Desktop)
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-loadbalancer
+  namespace: smart-waste
+  labels:
+    app: frontend
+    tier: presentation
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 3000
+    protocol: TCP
+    name: http
+  selector:
+    app: frontend
