@@ -1,0 +1,293 @@
+name: CI - Build and Test
+
+on:
+  push:
+    branches: [ main, develop, dev ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18.x'
+  REGISTRY: ${{ secrets.ACR_LOGIN_SERVER }}
+  IMAGE_NAME: smart-waste
+  
+jobs:
+  # Security and vulnerability scanning
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # Frontend CI
+  frontend-ci:
+    name: Frontend CI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+        
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run ESLint
+        run: npm run lint --if-present
+        
+      - name: Run Prettier check
+        run: npx prettier --check src/
+        
+      - name: Run tests
+        run: npm test -- --coverage --watchAll=false
+        env:
+          CI: true
+          
+      - name: Build application
+        run: npm run build
+        
+      - name: Upload test coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./frontend/coverage/lcov.info
+          flags: frontend
+          
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/build/
+          retention-days: 1
+
+  # Backend CI
+  backend-ci:
+    name: Backend CI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+        
+    services:
+      mongodb:
+        image: mongo:6.0
+        env:
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: password123
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongo --eval 'db.adminCommand(\"ping\")'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run ESLint
+        run: npm run lint --if-present
+        
+      - name: Run tests
+        run: npm test --if-present
+        env:
+          NODE_ENV: test
+          MONGODB_URI: mongodb://admin:password123@localhost:27017/smart_waste_test?authSource=admin
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test-jwt-secret
+          
+      - name: Run API integration tests
+        run: npm run test:integration --if-present
+        env:
+          NODE_ENV: test
+          MONGODB_URI: mongodb://admin:password123@localhost:27017/smart_waste_test?authSource=admin
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test-jwt-secret
+
+  # Docker build and push
+  docker:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    needs: [frontend-ci, backend-ci, security]
+    if: github.event_name == 'push'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Login to Azure Container Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+          
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+            
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          
+      - name: Run Docker image vulnerability scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          format: 'sarif'
+          output: 'docker-trivy-results.sarif'
+          
+      - name: Upload Docker scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'docker-trivy-results.sarif'
+
+  # Infrastructure validation
+  terraform-validate:
+    name: Terraform Validate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./terraform
+        
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.0"
+          
+      - name: Terraform Format Check
+        run: terraform fmt -check
+        
+      - name: Terraform Init
+        run: terraform init -backend=false
+        
+      - name: Terraform Validate
+        run: terraform validate
+        
+      - name: Run TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+          
+      - name: Show TFLint version
+        run: tflint --version
+        
+      - name: Init TFLint
+        run: tflint --init
+        
+      - name: Run TFLint
+        run: tflint -f compact
+
+  # Kubernetes manifest validation
+  kubernetes-validate:
+    name: Kubernetes Validate
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+          
+      - name: Validate Kubernetes manifests
+        run: |
+          for file in k8s/*.yaml; do
+            echo "Validating $file"
+            kubectl apply --dry-run=client --validate=true -f "$file"
+          done
+          
+      - name: Run kubeval
+        run: |
+          curl -sSL https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz | tar xz
+          chmod +x kubeval
+          ./kubeval k8s/*.yaml
+
+  # Notify on completion
+  notify:
+    name: Notify Results
+    runs-on: ubuntu-latest
+    needs: [frontend-ci, backend-ci, docker, terraform-validate, kubernetes-validate]
+    if: always()
+    
+    steps:
+      - name: Notify success
+        if: ${{ needs.frontend-ci.result == 'success' && needs.backend-ci.result == 'success' && needs.docker.result == 'success' }}
+        run: |
+          echo "✅ All CI checks passed successfully!"
+          echo "Docker image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          
+      - name: Notify failure
+        if: ${{ needs.frontend-ci.result == 'failure' || needs.backend-ci.result == 'failure' || needs.docker.result == 'failure' }}
+        run: |
+          echo "❌ CI pipeline failed. Please check the logs."
+          exit 1

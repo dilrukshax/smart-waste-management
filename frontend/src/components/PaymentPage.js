@@ -1,6 +1,7 @@
 // src/components/PaymentPage.js
 
 import React, { useContext, useState, useEffect } from 'react';
+import { API_CONFIG } from '../config/api';
 import AuthContext from '../context/AuthContext';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -61,7 +62,7 @@ const CheckoutForm = ({ requestData, totalPrice, onSuccessfulPayment }) => {
     try {
       // Create a Payment Intent on the backend
       const paymentIntentRes = await axios.post(
-        'http://localhost:5000/api/stripe/create-payment-intent',
+        API_CONFIG.STRIPE.CREATE_PAYMENT_INTENT,
         {
           wasteItems: requestData.wasteItems,
         },
@@ -97,7 +98,7 @@ const CheckoutForm = ({ requestData, totalPrice, onSuccessfulPayment }) => {
         if (paymentResult.paymentIntent.status === 'succeeded') {
           // Payment succeeded, send request data to the backend
           await axios.post(
-            'http://localhost:5000/api/request/create',
+            API_CONFIG.REQUEST.CREATE,
             {
               wasteItems: requestData.wasteItems,
               totalPrice: totalPrice,

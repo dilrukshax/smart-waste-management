@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:6.0
+    container_name: smart-waste-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: smart_waste
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - smart-waste-network
+
+  # Redis Cache (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: smart-waste-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - smart-waste-network
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      target: backend-build
+    container_name: smart-waste-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017/smart_waste?authSource=admin
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: your-jwt-secret-key
+      STRIPE_SECRET_KEY: your-stripe-secret-key
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongodb
+      - redis
+    volumes:
+      - ./backend:/app/backend
+      - /app/backend/node_modules
+    networks:
+      - smart-waste-network
+    command: npm start
+
+  # Frontend React App
+  frontend:
+    build:
+      context: .
+      target: frontend-build
+    container_name: smart-waste-frontend
+    restart: unless-stopped
+    environment:
+      REACT_APP_API_URL: http://localhost:3001
+      REACT_APP_STRIPE_PUBLISHABLE_KEY: your-stripe-publishable-key
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app/frontend
+      - /app/frontend/node_modules
+    networks:
+      - smart-waste-network
+    command: npm start
+
+  # Nginx Reverse Proxy (Production-like setup)
+  nginx:
+    image: nginx:alpine
+    container_name: smart-waste-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - smart-waste-network
+
+volumes:
+  mongodb_data:
+  redis_data:
+
+networks:
+  smart-waste-network:
+    driver: bridge

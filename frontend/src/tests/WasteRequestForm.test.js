@@ -31,7 +31,7 @@ describe('WasteRequestForm', () => {
       phoneNumber: '123-456-7890',
     };
 
-    mockAxios.onGet('http://localhost:5000/api/auth/profile').reply(200, mockProfileData);
+    mockAxios.onGet('http://localhost:3001/api/auth/profile').reply(200, mockProfileData);
 
     render(
       <AuthContext.Provider value={mockAuth}>
@@ -48,7 +48,7 @@ describe('WasteRequestForm', () => {
   });
 
   it('shows an error if the user info fetch fails', async () => {
-    mockAxios.onGet('http://localhost:5000/api/auth/profile').reply(500);
+    mockAxios.onGet('http://localhost:3001/api/auth/profile').reply(500);
 
     render(
       <AuthContext.Provider value={mockAuth}>

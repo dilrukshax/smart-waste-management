@@ -1,16 +1,16 @@
 // src/components/Header.js
 
 import React, { useContext, useState } from 'react';
-import { Navbar, Nav, Container } from 'react-bootstrap';
+import { Navbar, Nav, Container, Button, Dropdown } from 'react-bootstrap';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Recycle} from 'lucide-react';
+import { Recycle, User, LogOut, Settings, Bell, Menu } from 'lucide-react';
 import AuthContext from '../context/AuthContext';
-import '../styles/Header.css';  // Import the CSS file here
+import '../styles/Header.css';
 
 const Header = () => {
   const { auth, setAuth } = useContext(AuthContext);
   const navigate = useNavigate();
-  const location = useLocation(); // Hook to get current path
+  const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const logout = () => {
@@ -27,146 +27,158 @@ const Header = () => {
     setIsMobileMenuOpen(false);
   };
 
-  // Function to determine if a link is active
   const isActive = (path) => {
     return location.pathname === path;
   };
 
   return (
-    <Navbar
-      expand="lg"
-      className="navbar-custom"
-      fixed="top" // Fixes the navbar to the top
-      variant="dark" // Ensures text is light
-    >
+    <Navbar expand="lg" className="navbar-custom" fixed="top" variant="dark">
       <Container>
-        <Navbar.Brand as={Link} to="/" onClick={closeMobileMenu}>
-        <Recycle size={25} className="me-2" />
-          TrashMate
+        {/* Brand Logo */}
+        <Navbar.Brand as={Link} to="/" onClick={closeMobileMenu} className="brand-logo">
+          <div className="logo-container">
+            <Recycle size={28} className="logo-icon" />
+            <span className="brand-text">TrashMate</span>
+          </div>
         </Navbar.Brand>
-        <Navbar.Toggle aria-controls="basic-navbar-nav" onClick={toggleMobileMenu} />
+
+        {/* Mobile Menu Toggle */}
+        <Navbar.Toggle aria-controls="basic-navbar-nav" onClick={toggleMobileMenu} className="custom-toggler">
+          <Menu size={24} />
+        </Navbar.Toggle>
+
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="ms-auto"> {/* Aligns Nav links to the right */}
+          <Nav className="ms-auto align-items-center">
             {auth.user ? (
               <>
-                {auth.user.role === 'admin' && (
-                  <>
-                    <Nav.Link
-                      as={Link}
-                      to="/admin-dashboard"
-                      className={isActive('/admin-dashboard') ? 'active' : ''}
-                      onClick={closeMobileMenu}
-                    >
-                      Admin Dashboard
-                    </Nav.Link>
-                    <Nav.Link
-                      as={Link}
-                      to="/admin/users"
-                      className={isActive('/admin/users') ? 'active' : ''}
-                      onClick={closeMobileMenu}
-                    >
-                      User Management
-                    </Nav.Link>
-                    <Nav.Link
-                      as={Link}
-                      to="/admin/charts"
-                      className={isActive('/admin/charts') ? 'active' : ''}
-                      onClick={closeMobileMenu}
-                    >
-                      View Charts
-                    </Nav.Link>
-                    <Nav.Link
-                      as={Link}
-                      to="/profile"
-                      className={isActive('/profile') ? 'active' : ''}
-                      onClick={closeMobileMenu}
-                    >
-                      Profile
-                    </Nav.Link>
-                  </>
-                )}
-                {auth.user.role === 'garbageCollector' && (
-                  <>
-                    <Nav.Link
-                      as={Link}
-                      to="/garbage-collector-dashboard"
-                      className={isActive('/garbage-collector-dashboard') ? 'active' : ''}
-                      onClick={closeMobileMenu}
-                    >
-                      Garbage Collector Dashboard
-                    </Nav.Link>
-                    <Nav.Link
-                      as={Link}
-                      to="/collector/assigned-users"
-                      className={isActive('/collector/assigned-users') ? 'active' : ''}
-                      onClick={closeMobileMenu}
-                    >
-                      Assigned Users
-                    </Nav.Link>
-                    <Nav.Link
-                      as={Link}
-                      to="/profile"
-                      className={isActive('/profile') ? 'active' : ''}
-                      onClick={closeMobileMenu}
-                    >
-                      Profile
-                    </Nav.Link>
-                  </>
-                )}
-                {auth.user.role === 'user' && (
-                  <>
-                    {/* Removed the User Dashboard link as per previous instructions */}
-                    <Nav.Link
-                      as={Link}
-                      to="/user/invoices"
-                      className={isActive('/user/invoices') ? 'active' : ''}
-                      onClick={closeMobileMenu}
-                    >
-                      View Invoices
-                    </Nav.Link>
-                    <Nav.Link
-                      as={Link}
-                      to="/create-request"
-                      className={isActive('/create-request') ? 'active' : ''}
-                      onClick={closeMobileMenu}
-                    >
-                      Request Waste Collection
-                    </Nav.Link>
-                    <Nav.Link
-                      as={Link}
-                      to="/profile"
-                      className={isActive('/profile') ? 'active' : ''}
-                      onClick={closeMobileMenu}
-                    >
-                      Profile
-                    </Nav.Link>
-                  </>
-                )}
+                {/* Navigation Links */}
+                <div className="nav-links-container">
+                  {auth.user.role === 'admin' && (
+                    <>
+                      <Nav.Link
+                        as={Link}
+                        to="/admin-dashboard"
+                        className={`nav-link-custom ${isActive('/admin-dashboard') ? 'active' : ''}`}
+                        onClick={closeMobileMenu}
+                      >
+                        Dashboard
+                      </Nav.Link>
+                      <Nav.Link
+                        as={Link}
+                        to="/admin/users"
+                        className={`nav-link-custom ${isActive('/admin/users') ? 'active' : ''}`}
+                        onClick={closeMobileMenu}
+                      >
+                        Users
+                      </Nav.Link>
+                      <Nav.Link
+                        as={Link}
+                        to="/admin/charts"
+                        className={`nav-link-custom ${isActive('/admin/charts') ? 'active' : ''}`}
+                        onClick={closeMobileMenu}
+                      >
+                        Analytics
+                      </Nav.Link>
+                    </>
+                  )}
+                  {auth.user.role === 'garbageCollector' && (
+                    <>
+                      <Nav.Link
+                        as={Link}
+                        to="/garbage-collector-dashboard"
+                        className={`nav-link-custom ${isActive('/garbage-collector-dashboard') ? 'active' : ''}`}
+                        onClick={closeMobileMenu}
+                      >
+                        Dashboard
+                      </Nav.Link>
+                      <Nav.Link
+                        as={Link}
+                        to="/collector/assigned-users"
+                        className={`nav-link-custom ${isActive('/collector/assigned-users') ? 'active' : ''}`}
+                        onClick={closeMobileMenu}
+                      >
+                        Assigned Users
+                      </Nav.Link>
+                    </>
+                  )}
+                  {auth.user.role === 'user' && (
+                    <>
+                      <Nav.Link
+                        as={Link}
+                        to="/user/invoices"
+                        className={`nav-link-custom ${isActive('/user/invoices') ? 'active' : ''}`}
+                        onClick={closeMobileMenu}
+                      >
+                        View Invoices
+                      </Nav.Link>
+                      <Nav.Link
+                        as={Link}
+                        to="/create-request"
+                        className={`nav-link-custom ${isActive('/create-request') ? 'active' : ''}`}
+                        onClick={closeMobileMenu}
+                      >
+                        Request Waste Collection
+                      </Nav.Link>
+                    </>
+                  )}
+                </div>
+
+                {/* User Actions */}
+                <div className="user-actions">
+                  {/* Notifications */}
+                  <Button variant="link" className="notification-btn">
+                    <Bell size={20} />
+                    <span className="notification-badge">3</span>
+                  </Button>
+
+                  {/* User Profile Dropdown */}
+                  <Dropdown align="end">
+                    <Dropdown.Toggle variant="link" className="user-dropdown" id="user-dropdown">
+                      <div className="user-avatar">
+                        <User size={20} />
+                      </div>
+                      <span className="user-name">{auth.user.name || auth.user.email}</span>
+                    </Dropdown.Toggle>
+
+                    <Dropdown.Menu className="user-dropdown-menu">
+                      <Dropdown.Item as={Link} to="/profile" onClick={closeMobileMenu}>
+                        <User size={16} className="me-2" />
+                        Profile
+                      </Dropdown.Item>
+                      <Dropdown.Item>
+                        <Settings size={16} className="me-2" />
+                        Settings
+                      </Dropdown.Item>
+                      <Dropdown.Divider />
+                      <Dropdown.Item onClick={() => { logout(); closeMobileMenu(); }} className="logout-item">
+                        <LogOut size={16} className="me-2" />
+                        Logout
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </div>
               </>
             ) : (
-              <>
+              /* Guest Navigation */
+              <div className="guest-actions">
                 <Nav.Link
                   as={Link}
                   to="/login"
-                  className={isActive('/login') ? 'active' : ''}
+                  className={`nav-link-custom ${isActive('/login') ? 'active' : ''}`}
                   onClick={closeMobileMenu}
                 >
                   Login
                 </Nav.Link>
-                <Nav.Link
+                <Button
                   as={Link}
                   to="/register"
-                  className={isActive('/register') ? 'active' : ''}
+                  variant="outline-light"
+                  className="register-btn"
                   onClick={closeMobileMenu}
                 >
-                  Register
-                </Nav.Link>
-              </>
-            )}
-            {auth.user && (
-              <Nav.Link className="logout-btn" onClick={() => { logout(); closeMobileMenu(); }}>
-                Logout
-              </Nav.Link>
+                  Get Started
+                </Button>
+              </div>
             )}
           </Nav>
         </Navbar.Collapse>

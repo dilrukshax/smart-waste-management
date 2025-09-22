@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+  namespace: smart-waste
+  labels:
+    app: mongodb
+    tier: database
+spec:
+  type: ClusterIP
+  ports:
+  - port: 27017
+    targetPort: 27017
+    protocol: TCP
+  selector:
+    app: mongodb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: smart-waste
+  labels:
+    app: redis
+    tier: cache
+spec:
+  type: ClusterIP
+  ports:
+  - port: 6379
+    targetPort: 6379
+    protocol: TCP
+  selector:
+    app: redis
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: smart-waste-frontend
+  namespace: smart-waste
+  labels:
+    app: smart-waste-app
+    tier: frontend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3000
+    targetPort: 3000
+    protocol: TCP
+    name: http
+  selector:
+    app: smart-waste-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: smart-waste-backend
+  namespace: smart-waste
+  labels:
+    app: smart-waste-app
+    tier: backend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3001
+    targetPort: 3001
+    protocol: TCP
+    name: http
+  selector:
+    app: smart-waste-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: smart-waste-app-loadbalancer
+  namespace: smart-waste
+  labels:
+    app: smart-waste-app
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-internal: "false"
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 3000
+    protocol: TCP
+    name: frontend
+  - port: 8080
+    targetPort: 3001
+    protocol: TCP
+    name: backend
+  selector:
+    app: smart-waste-app

@@ -1,0 +1,51 @@
+# .dockerignore
+node_modules
+npm-debug.log
+.git
+.gitignore
+README.md
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+coverage
+.nyc_output
+*.log
+logs
+.cache
+.next
+.nuxt
+dist
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Frontend specific
+frontend/build
+frontend/coverage
+frontend/.eslintcache
+
+# Backend specific
+backend/uploads
+backend/logs
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# CI/CD
+.github
+.gitignore
+
+# Infrastructure
+terraform
+k8s
+*.tfstate
+*.tfstate.backup
+.terraform

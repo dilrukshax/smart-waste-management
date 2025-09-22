@@ -1,6 +1,7 @@
 // components/AdminGarbageChart.js
 
 import React, { useEffect, useState } from 'react';
+import { API_CONFIG } from '../config/api';
 import { Bar } from 'react-chartjs-2';
 import axios from 'axios';
 import {
@@ -58,7 +59,7 @@ const AdminGarbageChart = () => {
         }
 
         // Make API request with Authorization header
-        const res = await axios.get('http://localhost:5000/api/admin/garbage-stats', {
+        const res = await axios.get(API_CONFIG.ADMIN.GARBAGE_STATS, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

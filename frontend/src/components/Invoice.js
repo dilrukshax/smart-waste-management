@@ -1,6 +1,7 @@
 // src/components/Invoice.js
 
 import React, { useEffect, useState } from 'react';
+import { API_CONFIG } from '../config/api';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Table, Alert, Button } from 'react-bootstrap';
@@ -14,7 +15,7 @@ const Invoice = () => {
   useEffect(() => {
     const fetchInvoice = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/invoice/${id}`, {
+        const res = await axios.get(`http://localhost:3001/api/invoice/${id}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Adjust as per your auth
           },

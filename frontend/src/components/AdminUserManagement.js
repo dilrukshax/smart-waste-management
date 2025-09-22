@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { API_CONFIG } from '../config/api';
 import AuthContext from '../context/AuthContext';
 import axios from 'axios';
 import '../styles/AdminUserManagement.css'; // Link to the new CSS file
@@ -13,10 +14,10 @@ const AdminUserManagement = () => {
     const fetchUsersAndCollectors = async () => {
       try {
         const [usersRes, collectorsRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/admin/users', {
+          axios.get(API_CONFIG.ADMIN.USERS, {
             headers: { Authorization: `Bearer ${auth.token}` },
           }),
-          axios.get('http://localhost:5000/api/auth/garbage-collectors', {
+          axios.get(API_CONFIG.AUTH.GARBAGE_COLLECTORS, {
             headers: { Authorization: `Bearer ${auth.token}` },
           }),
         ]);
@@ -34,7 +35,7 @@ const AdminUserManagement = () => {
   const assignCollector = async (userId) => {
     try {
       await axios.put(
-        'http://localhost:5000/api/admin/assign-collector',
+        API_CONFIG.ADMIN.ASSIGN_COLLECTOR,
         {
           userId,
           collectorId: selectedCollector[userId],
@@ -61,7 +62,7 @@ const AdminUserManagement = () => {
   const generateInvoice = async (userId) => {
     try {
       await axios.post(
-        `http://localhost:5000/api/admin/generate-invoice/${userId}`,
+        `http://localhost:3001/api/admin/generate-invoice/${userId}`,
         {},
         {
           headers: { Authorization: `Bearer ${auth.token}` },

@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { API_CONFIG } from '../config/api';
 import AuthContext from '../context/AuthContext';
 import axios from 'axios';
 import '../styles/UserInvoices.css'; // Import custom CSS
@@ -10,7 +11,7 @@ const UserInvoices = () => {
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/user/invoices', {
+        const res = await axios.get(API_CONFIG.USER.INVOICES, {
           headers: { Authorization: `Bearer ${auth.token}` },
         });
         setInvoices(res.data);

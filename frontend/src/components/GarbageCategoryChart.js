@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { API_CONFIG } from '../config/api';
 import { Pie } from 'react-chartjs-2';
 import axios from 'axios';
 import {
@@ -26,7 +27,7 @@ const GarbageCategoryChart = () => {
           token = parsedAuthData.token || parsedAuthData;
         }
 
-        const res = await axios.get('http://localhost:5000/api/admin/garbage-category-count', {
+        const res = await axios.get(API_CONFIG.ADMIN.GARBAGE_CATEGORY_COUNT, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

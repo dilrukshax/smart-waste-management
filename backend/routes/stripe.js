@@ -5,9 +5,13 @@ const router = express.Router();
 const Stripe = require('stripe');
 const authMiddleware = require('../middleware/auth');
 const Request = require('../models/Request'); // Ensure correct path
-require('dotenv').config();
 
 // Initialize Stripe with your secret key
+if (!process.env.STRIPE_SECRET_KEY) {
+  console.error('STRIPE_SECRET_KEY environment variable is not set');
+  console.error('Available env vars:', Object.keys(process.env).filter(key => key.includes('STRIPE')));
+  throw new Error('STRIPE_SECRET_KEY environment variable is required');
+}
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Create a Payment Intent
